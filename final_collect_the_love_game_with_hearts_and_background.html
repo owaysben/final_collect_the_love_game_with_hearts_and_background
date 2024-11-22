@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collect the Love</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Pacifico', cursive;
+      background: url('resized_game_background.png') center/cover no-repeat;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+    }
+    .game-over, .start-screen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+    .start-screen {
+      display: block;
+    }
+    .game-over h1, .start-screen h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: #ff6f61;
+    }
+    .game-over p, .start-screen p {
+      margin: 10px 0;
+      font-size: 1.2rem;
+      color: #333;
+    }
+    .btn {
+      padding: 10px 20px;
+      margin-top: 10px;
+      background: #ff6f61;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #ff3b2f;
+    }
+  </style>
+</head>
+<body>
+  <div class="start-screen">
+    <h1>Collect the Love</h1>
+    <p>Use arrow keys or touch controls to move and collect the hearts!</p>
+    <p>Reach 19 points to win!</p>
+    <button class="btn" onclick="startGame()">Start Game</button>
+  </div>
+  <div class="game-over">
+    <h1>You are an amazing girlfriend!</h1>
+    <p>Your love fills my life with joy and endless smiles. Every heart collected reminds me of how special you are to me. I couldn’t be luckier to have you by my side!</p>
+    <button class="btn" onclick="restartGame()">Play Again</button>
+  </div>
+  <canvas id="gameCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const startScreen = document.querySelector('.start-screen');
+    const gameOverScreen = document.querySelector('.game-over');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const playerImage = new Image();
+    playerImage.src = 'player_avatar.png';
+
+    const heartImages = [
+      'resized_heart_1.png',
+      'resized_red_heart.png',
+      'resized_pink_heart.png',
+      'resized_sparkling_heart.png',
+    ];
+
+    let player = {
+      x: canvas.width / 2,
+      y: canvas.height - 150,
+      width: 100,
+      height: 100,
+      speed: 8,
+      movingLeft: false,
+      movingRight: false
+    };
+
+    let hearts = [];
+    let score = 0;
+    let gameRunning = false;
+
+    function drawPlayer() {
+      ctx.drawImage(playerImage, player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
+    }
+
+    function spawnHeart() {
+      const heartImage = new Image();
+      heartImage.src = heartImages[Math.floor(Math.random() * heartImages.length)];
+      hearts.push({
+        x: Math.random() * canvas.width,
+        y: -20,
+        size: 50,
+        img: heartImage,
+        speed: 2 + Math.random() * 3,
+      });
+    }
+
+    function drawHearts() {
+      hearts.forEach(heart => {
+        ctx.drawImage(heart.img, heart.x - heart.size / 2, heart.y - heart.size / 2, heart.size, heart.size);
+      });
+    }
+
+    function moveHearts() {
+      hearts.forEach(heart => (heart.y += heart.speed));
+      hearts = hearts.filter(heart => heart.y < canvas.height);
+    }
+
+    function checkCollision() {
+      hearts.forEach((heart, index) => {
+        const dist = Math.hypot(heart.x - player.x, heart.y - player.y);
+        if (dist < heart.size / 2 + player.width / 2) {
+          hearts.splice(index, 1);
+          score++;
+          if (score >= 19) endGame();
+        }
+      });
+    }
+
+    function drawScore() {
+      ctx.font = '20px Pacifico';
+      ctx.fillStyle = '#fff';
+      ctx.fillText(`Score: ${score}`, 10, 30);
+    }
+
+    function updatePlayerPosition() {
+      if (player.movingLeft && player.x - player.width / 2 > 0) player.x -= player.speed;
+      if (player.movingRight && player.x + player.width / 2 < canvas.width) player.x += player.speed;
+    }
+
+    function gameLoop() {
+      if (!gameRunning) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      updatePlayerPosition();
+      drawPlayer();
+      drawHearts();
+      moveHearts();
+      checkCollision();
+      drawScore();
+
+      if (Math.random() < 0.02) spawnHeart();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function startGame() {
+      startScreen.style.display = 'none';
+      gameOverScreen.style.display = 'none';
+      score = 0;
+      hearts = [];
+      player.x = canvas.width / 2;
+      gameRunning = true;
+      gameLoop();
+    }
+
+    function endGame() {
+      gameRunning = false;
+      gameOverScreen.style.display = 'block'; // Show the game-over screen
+    }
+
+    function restartGame() {
+      startScreen.style.display = 'block'; // Show start screen to replay
+      gameOverScreen.style.display = 'none';
+    }
+
+    window.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') player.movingLeft = true;
+      if (e.key === 'ArrowRight') player.movingRight = true;
+    });
+
+    window.addEventListener('keyup', e => {
+      if (e.key === 'ArrowLeft') player.movingLeft = false;
+      if (e.key === 'ArrowRight') player.movingRight = false;
+    });
+  </script>
+</body>
+</html>

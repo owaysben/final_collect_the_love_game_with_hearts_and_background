@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,12 +32,12 @@
     }
     .game-over h1, .start-screen h1 {
       margin: 0;
-      font-size: 2rem;
+      font-size: 1.5rem; /* Adjusted for smaller screens */
       color: #ff6f61;
     }
     .game-over p, .start-screen p {
       margin: 10px 0;
-      font-size: 1.2rem;
+      font-size: 1rem; /* Adjusted for readability */
       color: #333;
     }
     .btn {
@@ -54,12 +53,35 @@
     .btn:hover {
       background: #ff3b2f;
     }
+    .controls {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      z-index: 5;
+    }
+    .controls button {
+      width: 60px;
+      height: 60px;
+      background: #ff6f61;
+      color: white;
+      font-size: 2rem;
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+    }
+    .controls button:hover {
+      background: #ff3b2f;
+    }
   </style>
 </head>
 <body>
   <div class="start-screen">
     <h1>Collect the Love</h1>
-    <p>Use arrow keys or touch controls to move and collect the hearts!</p>
+    <p>Use touch controls or keys to move and collect hearts!</p>
     <p>Reach 19 points to win!</p>
     <button class="btn" onclick="startGame()">Start Game</button>
   </div>
@@ -69,11 +91,17 @@
     <button class="btn" onclick="restartGame()">Play Again</button>
   </div>
   <canvas id="gameCanvas"></canvas>
+  <div class="controls">
+    <button id="left-btn">←</button>
+    <button id="right-btn">→</button>
+  </div>
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const startScreen = document.querySelector('.start-screen');
     const gameOverScreen = document.querySelector('.game-over');
+    const leftBtn = document.getElementById('left-btn');
+    const rightBtn = document.getElementById('right-btn');
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -193,6 +221,29 @@
     window.addEventListener('keyup', e => {
       if (e.key === 'ArrowLeft') player.movingLeft = false;
       if (e.key === 'ArrowRight') player.movingRight = false;
+    });
+
+    leftBtn.addEventListener('mousedown', () => (player.movingLeft = true));
+    leftBtn.addEventListener('mouseup', () => (player.movingLeft = false));
+    rightBtn.addEventListener('mousedown', () => (player.movingRight = true));
+    rightBtn.addEventListener('mouseup', () => (player.movingRight = false));
+
+    // Touch controls for mobile
+    leftBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      player.movingLeft = true;
+    });
+    leftBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      player.movingLeft = false;
+    });
+    rightBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      player.movingRight = true;
+    });
+    rightBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      player.movingRight = false;
     });
   </script>
 </body>
